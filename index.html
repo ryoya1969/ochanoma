@@ -395,22 +395,24 @@ const JSON_URL = "books.json";
 
 let BOOKS = [];
 
+// 【修正1】数値データが来てもエラーにならないように String() で囲む
 function escapeHtml(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// 【修正2】ここでも数値データに対応させる
 function highlight(text, query) {
-  if (!text) return '';
+  if (text == null || text === '') return '';
   if (!query) return escapeHtml(text);
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escaped = String(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return escapeHtml(text).replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="highlight">$1</mark>');
 }
 
 function renderRows(books, query) {
   const bookList = document.getElementById('bookList');
   const noResult = document.getElementById('noResult');
-  if (books.length === 0) {
+  if (!Array.isArray(books) || books.length === 0) {
     bookList.innerHTML = '';
     noResult.style.display = '';
     return;
@@ -423,14 +425,14 @@ function renderRows(books, query) {
     <div class="book-card" style="animation-delay:${delay}s">
       <div class="shelf-badge">
         <span class="shelf-label">棚</span>
-        <span class="shelf-value">${b['棚']}-${b['段']}</span>
+        <span class="shelf-value">${escapeHtml(b['棚'])}-${escapeHtml(b['段'])}</span>
       </div>
       <div class="book-info">
         <div class="book-title">${highlight(b['書籍名'], query)}</div>
         <div class="book-meta">
           <span>✍️ ${highlight(b['著者名'], query) || '<span class="tag">著者不明</span>'}</span>
           <span>🏢 ${highlight(b['出版社'], query)}</span>
-          <span>📅 ${b['年']}年</span>
+          <span>📅 ${escapeHtml(b['年'])}年</span>
         </div>
         ${note}
       </div>
@@ -441,7 +443,7 @@ function renderRows(books, query) {
 function updateStatus(results, q, from, to) {
   const status = document.getElementById('status');
   const parts = [];
-  if (q) parts.push(`「${q}」`);
+  if (q) parts.push(`「${escapeHtml(q)}」`);
   if (from !== null && to !== null) parts.push(`${from}〜${to}年`);
   else if (from !== null) parts.push(`${from}年以降`);
   else if (to !== null) parts.push(`${to}年以前`);
@@ -464,7 +466,9 @@ function doSearch() {
 
   const results = BOOKS.filter(b => {
     if (q) {
-      cconst hit = [b['書籍名'], b['著者名'], b['出版社'], b['備考'], b['棚'], b['段'], b['年']].some(v => v != null && String(v).toLowerCase().includes(lower));
+      // 【修正3】検索時も null チェックと String() 変換を行う
+      const hit = [b['書籍名'], b['著者名'], b['出版社'], b['備考'], b['棚'], b['段'], b['年']]
+        .some(v => v != null && String(v).toLowerCase().includes(lower));
       if (!hit) return false;
     }
     if (from !== null || to !== null) {
@@ -512,12 +516,12 @@ function showError(msg) {
   ls.innerHTML = msg;
 }
 
-// books-data.js のデータを即時反映（file:// でも動作するフォールバック）
+// books-data.js のデータを即時反映
 if (window.BOOKS_FALLBACK && window.BOOKS_FALLBACK.length > 0) {
   applyData(window.BOOKS_FALLBACK, 'ローカルデータを表示中（スプレッドシートに接続中...）');
 }
 
-// 1. GAS → 2. books.json の順で上書き試行
+// データ取得処理
 fetch(GAS_URL)
   .then(res => { if (!res.ok) throw new Error(); return res.json(); })
   .then(data => {
