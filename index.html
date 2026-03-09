@@ -179,6 +179,10 @@
       font-size: 1rem;
     }
 
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
     .btn {
       padding: 12px 24px;
       font-size: 0.95rem;
@@ -345,16 +349,115 @@
       margin-bottom: 12px;
     }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 640px) {
-      header { padding: 24px 18px 22px; border-radius: 0 0 24px 24px; }
-      header h1 { font-size: 1.3rem; }
-      .search-card { margin: -16px 10px 0; padding: 18px 16px; border-radius: 20px; }
-      .btn { padding: 10px 16px; font-size: 0.88rem; }
-      .book-card { padding: 14px 14px; border-radius: 14px; gap: 10px; }
-      .shelf-badge { padding: 8px 10px; min-width: 50px; border-radius: 12px; }
-      .book-title { font-size: 0.94rem; }
-      .book-meta { font-size: 0.8rem; }
+    /* ===== Responsive: Tablet ===== */
+    @media (max-width: 768px) {
+      .search-row {
+        gap: 10px;
+      }
+      .search-input-wrap {
+        flex: 1 1 100%;
+      }
+      .btn { padding: 11px 18px; }
+    }
+
+    /* ===== Responsive: Mobile ===== */
+    @media (max-width: 480px) {
+      body { background: linear-gradient(180deg, #e8f0fe 0%, #f0e6ff 100%); }
+
+      header {
+        padding: 22px 16px 20px;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+      }
+      header h1 { font-size: 1.25rem; letter-spacing: 0.03em; }
+      header h1::before { font-size: 1.1rem; margin-right: 6px; }
+      header .subtitle { font-size: 0.78rem; margin-top: 4px; }
+      #load-status { font-size: 0.72rem; margin-top: 8px; }
+
+      .search-card {
+        margin: -14px 8px 0;
+        padding: 16px 14px;
+        border-radius: 18px;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1), 0 1px 3px rgba(0,0,0,0.05);
+      }
+      .search-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .search-input-wrap {
+        flex: 1 1 100%;
+        width: 100%;
+      }
+      /* iOS: font-size 16px以上でズーム防止 */
+      .search-input-wrap input {
+        font-size: 16px;
+        padding: 13px 14px 13px 40px;
+        border-radius: 14px;
+      }
+      .year-filter {
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+      }
+      .year-filter label {
+        font-size: 0.82rem;
+        padding: 3px 8px;
+      }
+      .year-filter input[type="number"] {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        font-size: 16px;
+        padding: 10px 6px;
+        border-radius: 10px;
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+      }
+      .btn {
+        flex: 1;
+        padding: 13px 10px;
+        font-size: 0.95rem;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      #status {
+        margin: 12px 8px 0;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+      }
+
+      .results {
+        margin: 8px auto 32px;
+        padding: 0 8px;
+      }
+      .book-list { gap: 8px; }
+      .book-card {
+        padding: 12px;
+        border-radius: 14px;
+        gap: 10px;
+        border-left-width: 3px;
+      }
+      .shelf-badge {
+        padding: 8px 8px;
+        min-width: 48px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+      }
+      .shelf-badge .shelf-label { font-size: 0.6rem; }
+      .shelf-badge .shelf-value { font-size: 0.9rem; }
+      .book-title { font-size: 0.92rem; margin-bottom: 4px; }
+      .book-meta {
+        flex-direction: column;
+        gap: 3px;
+        font-size: 0.78rem;
+      }
+      .book-note { font-size: 0.76rem; padding: 3px 8px; }
+      .no-result { padding: 40px 16px; font-size: 0.95rem; }
+      .no-result::before { font-size: 2rem; margin-bottom: 8px; }
     }
   </style>
 </head>
@@ -377,8 +480,10 @@
       <span class="sep">〜</span>
       <input type="number" id="yearTo" placeholder="To" min="1900" max="2100">
     </div>
-    <button class="btn btn-primary" onclick="doSearch()">検索</button>
-    <button class="btn btn-secondary" onclick="clearSearch()">クリア</button>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="doSearch()">検索</button>
+      <button class="btn btn-secondary" onclick="clearSearch()">クリア</button>
+    </div>
   </div>
 </div>
 
