@@ -396,8 +396,8 @@ const JSON_URL = "books.json";
 let BOOKS = [];
 
 function escapeHtml(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function highlight(text, query) {
@@ -464,7 +464,7 @@ function doSearch() {
 
   const results = BOOKS.filter(b => {
     if (q) {
-      const hit = [b['書籍名'], b['著者名'], b['出版社'], b['備考'], b['棚'], b['段'], b['年']].some(v => v && v.toLowerCase().includes(lower));
+      cconst hit = [b['書籍名'], b['著者名'], b['出版社'], b['備考'], b['棚'], b['段'], b['年']].some(v => v != null && String(v).toLowerCase().includes(lower));
       if (!hit) return false;
     }
     if (from !== null || to !== null) {
