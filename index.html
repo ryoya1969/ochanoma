@@ -6,50 +6,142 @@
   <title>お茶のみ部屋 蔵書検索</title>
   <script src="books-data.js"></script>
   <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-      background: #f5f0e8;
-      color: #333;
+      font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", -apple-system, sans-serif;
+      background: linear-gradient(135deg, #e8f0fe 0%, #f0e6ff 50%, #e0f4ff 100%);
+      color: #2d3748;
       min-height: 100vh;
     }
+
+    /* ===== Header ===== */
     header {
-      background: #5c4a2a;
-      color: #f5f0e8;
-      padding: 20px 24px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+      color: #fff;
+      padding: 32px 28px 28px;
+      border-radius: 0 0 32px 32px;
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
     }
     header h1 {
-      font-size: 1.5rem;
-      font-weight: bold;
-      letter-spacing: 0.05em;
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      position: relative;
+      animation: fadeInUp 0.6s ease;
     }
-    header p {
-      font-size: 0.85rem;
-      margin-top: 4px;
-      opacity: 0.8;
+    header h1::before {
+      content: '📚';
+      margin-right: 8px;
+      font-size: 1.4rem;
     }
-    .search-area {
+    header .subtitle {
+      font-size: 0.88rem;
+      margin-top: 6px;
+      opacity: 0.85;
+      position: relative;
+      animation: fadeInUp 0.6s ease 0.15s both;
+    }
+    #load-status {
+      font-size: 0.78rem;
+      margin-top: 10px;
+      opacity: 0.7;
+      position: relative;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    .loader {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* ===== Search Card ===== */
+    .search-card {
+      max-width: 860px;
+      margin: -20px auto 0;
+      padding: 24px 28px;
       background: #fff;
-      padding: 20px 24px;
-      border-bottom: 1px solid #ddd;
+      border-radius: 24px;
+      box-shadow: 0 4px 24px rgba(59, 130, 246, 0.12), 0 1px 4px rgba(0,0,0,0.06);
+      position: relative;
+      z-index: 10;
+      animation: fadeInUp 0.5s ease 0.2s both;
+    }
+    .search-row {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
-    .search-area input[type="text"] {
-      flex: 1 1 280px;
-      padding: 10px 14px;
+    .search-input-wrap {
+      flex: 1 1 260px;
+      position: relative;
+    }
+    .search-input-wrap::before {
+      content: '🔍';
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
       font-size: 1rem;
-      border: 2px solid #b8a070;
-      border-radius: 6px;
+      pointer-events: none;
+    }
+    .search-input-wrap input {
+      width: 100%;
+      padding: 14px 16px 14px 42px;
+      font-size: 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.3s ease;
+      background: #f8fafc;
     }
-    .search-area input[type="text"]:focus {
-      border-color: #5c4a2a;
+    .search-input-wrap input:focus {
+      border-color: #3b82f6;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
     }
+
     .year-filter {
       display: flex;
       align-items: center;
@@ -57,147 +149,243 @@
       flex-wrap: wrap;
     }
     .year-filter label {
-      font-size: 0.9rem;
-      color: #5c4a2a;
-      font-weight: bold;
+      font-size: 0.85rem;
+      color: #6366f1;
+      font-weight: 700;
       white-space: nowrap;
+      background: #eef2ff;
+      padding: 4px 10px;
+      border-radius: 10px;
     }
     .year-filter input[type="number"] {
-      width: 80px;
-      padding: 8px 10px;
-      font-size: 0.95rem;
-      border: 2px solid #b8a070;
-      border-radius: 6px;
+      width: 78px;
+      padding: 10px 10px;
+      font-size: 0.92rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
       outline: none;
-      transition: border-color 0.2s;
+      text-align: center;
+      background: #f8fafc;
+      transition: all 0.3s ease;
     }
     .year-filter input[type="number"]:focus {
-      border-color: #5c4a2a;
-    }
-    .year-filter span {
-      color: #888;
-      font-size: 0.9rem;
-    }
-    .search-area button {
-      padding: 10px 20px;
-      font-size: 0.95rem;
-      background: #5c4a2a;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .search-area button:hover { background: #3e3018; }
-    .search-area button.clear {
-      background: #888;
-    }
-    .search-area button.clear:hover { background: #555; }
-    #status {
-      padding: 10px 24px;
-      font-size: 0.9rem;
-      color: #666;
-      background: #faf8f3;
-      border-bottom: 1px solid #e0d8c8;
-    }
-    .results {
-      padding: 16px 24px 40px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+      border-color: #3b82f6;
       background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
     }
-    thead tr {
-      background: #5c4a2a;
-      color: #f5f0e8;
-    }
-    thead th {
-      padding: 12px 14px;
-      text-align: left;
-      font-size: 0.9rem;
+    .year-filter .sep {
+      color: #94a3b8;
       font-weight: bold;
-      white-space: nowrap;
+      font-size: 1rem;
     }
-    tbody tr {
-      border-bottom: 1px solid #e8e0d0;
-      transition: background 0.15s;
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.03em;
     }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #faf5e8; }
-    tbody td {
-      padding: 10px 14px;
-      font-size: 0.92rem;
-      vertical-align: top;
-    }
-    .shelf-badge {
-      display: inline-block;
-      background: #5c4a2a;
+    .btn:active { transform: scale(0.95); }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
       color: #fff;
-      font-weight: bold;
-      font-size: 0.85rem;
-      padding: 3px 10px;
-      border-radius: 12px;
-      min-width: 56px;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #64748b;
+    }
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    /* ===== Status ===== */
+    #status {
+      max-width: 860px;
+      margin: 16px auto 0;
+      padding: 10px 20px;
+      font-size: 0.88rem;
+      color: #64748b;
       text-align: center;
+      animation: fadeInUp 0.5s ease 0.35s both;
+    }
+    #status .count {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      color: #fff;
+      font-weight: 800;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      min-width: 36px;
+    }
+
+    /* ===== Results ===== */
+    .results {
+      max-width: 920px;
+      margin: 12px auto 40px;
+      padding: 0 16px;
+    }
+
+    /* Card-based results instead of table */
+    .book-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .book-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07), 0 1px 3px rgba(0,0,0,0.04);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+      transition: all 0.25s ease;
+      animation: fadeInUp 0.4s ease both;
+      border-left: 4px solid transparent;
+    }
+    .book-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59, 130, 246, 0.14), 0 2px 6px rgba(0,0,0,0.06);
+      border-left-color: #3b82f6;
+    }
+
+    .shelf-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 10px 12px;
+      border-radius: 14px;
+      min-width: 58px;
+      text-align: center;
+      line-height: 1.4;
+      box-shadow: 0 3px 10px rgba(59, 130, 246, 0.25);
+    }
+    .shelf-badge .shelf-label {
+      font-size: 0.65rem;
+      opacity: 0.8;
+      font-weight: 600;
+    }
+    .shelf-badge .shelf-value {
+      font-size: 1rem;
       letter-spacing: 0.05em;
     }
-    .title-cell { font-weight: 500; }
-    .note-cell { color: #888; font-size: 0.85rem; }
-    .highlight { background: #ffe98a; border-radius: 2px; }
+
+    .book-info {
+      min-width: 0;
+    }
+    .book-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.45;
+      margin-bottom: 6px;
+    }
+    .book-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      font-size: 0.84rem;
+      color: #64748b;
+    }
+    .book-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .book-meta .tag {
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+    .book-note {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: #8b5cf6;
+      background: #f5f3ff;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #fde68a, #fbbf24);
+      border-radius: 4px;
+      padding: 0 2px;
+    }
+
     .no-result {
       text-align: center;
       padding: 60px 20px;
-      color: #999;
-      font-size: 1rem;
+      color: #94a3b8;
+      font-size: 1.05rem;
+      animation: fadeInUp 0.4s ease;
     }
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.2rem; }
-      .search-area { padding: 14px 12px; }
-      .results { padding: 12px 8px 40px; }
-      thead th, tbody td { padding: 8px 8px; font-size: 0.82rem; }
+    .no-result::before {
+      content: '📭';
+      display: block;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      header { padding: 24px 18px 22px; border-radius: 0 0 24px 24px; }
+      header h1 { font-size: 1.3rem; }
+      .search-card { margin: -16px 10px 0; padding: 18px 16px; border-radius: 20px; }
+      .btn { padding: 10px 16px; font-size: 0.88rem; }
+      .book-card { padding: 14px 14px; border-radius: 14px; gap: 10px; }
+      .shelf-badge { padding: 8px 10px; min-width: 50px; border-radius: 12px; }
+      .book-title { font-size: 0.94rem; }
+      .book-meta { font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
+
 <header>
   <h1>お茶のみ部屋 蔵書検索</h1>
-  <p>書籍名・著者名・出版社などで棚と段を調べられます</p>
-  <p id="load-status" style="font-size:0.8rem; margin-top:6px; opacity:0.75;">スプレッドシートからデータを読み込んでいます...</p>
+  <p class="subtitle">書籍名・著者名・出版社などで棚と段を調べられます</p>
+  <p id="load-status"><span class="loader"></span>データを読み込んでいます...</p>
 </header>
 
-<div class="search-area">
-  <input type="text" id="query" placeholder="書籍名・著者名・出版社などを入力..." autofocus>
-  <div class="year-filter">
-    <label>出版年</label>
-    <input type="number" id="yearFrom" placeholder="1900" min="1900" max="2100">
-    <span>〜</span>
-    <input type="number" id="yearTo" placeholder="2100" min="1900" max="2100">
-    <span>年</span>
+<div class="search-card">
+  <div class="search-row">
+    <div class="search-input-wrap">
+      <input type="text" id="query" placeholder="キーワードを入力..." autofocus>
+    </div>
+    <div class="year-filter">
+      <label>出版年</label>
+      <input type="number" id="yearFrom" placeholder="From" min="1900" max="2100">
+      <span class="sep">〜</span>
+      <input type="number" id="yearTo" placeholder="To" min="1900" max="2100">
+    </div>
+    <button class="btn btn-primary" onclick="doSearch()">検索</button>
+    <button class="btn btn-secondary" onclick="clearSearch()">クリア</button>
   </div>
-  <button onclick="doSearch()">検索</button>
-  <button class="clear" onclick="clearSearch()">クリア</button>
 </div>
 
 <div id="status">読み込み中...</div>
 
 <div class="results">
-  <table id="table">
-    <thead>
-      <tr>
-        <th>棚・段</th>
-        <th>書籍名</th>
-        <th>著者名</th>
-        <th>出版社</th>
-        <th>年</th>
-        <th>備考</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
+  <div class="book-list" id="bookList"></div>
   <div class="no-result" id="noResult" style="display:none">該当する書籍が見つかりませんでした。</div>
 </div>
 
@@ -208,44 +396,67 @@ const JSON_URL = "books.json";
 let BOOKS = [];
 
 function escapeHtml(s) {
+  if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function highlight(text, query) {
-  if (!query || !text) return escapeHtml(text);
+  if (!text) return '';
+  if (!query) return escapeHtml(text);
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return escapeHtml(text).replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="highlight">$1</mark>');
 }
 
 function renderRows(books, query) {
-  const tbody = document.getElementById('tbody');
+  const bookList = document.getElementById('bookList');
   const noResult = document.getElementById('noResult');
-  const table = document.getElementById('table');
   if (books.length === 0) {
-    tbody.innerHTML = '';
-    table.style.display = 'none';
+    bookList.innerHTML = '';
     noResult.style.display = '';
     return;
   }
-  table.style.display = '';
   noResult.style.display = 'none';
-  tbody.innerHTML = books.map(b => `
-    <tr>
-      <td><span class="shelf-badge">棚${b['棚']} ${b['段']}段</span></td>
-      <td class="title-cell">${highlight(b['書籍名'], query)}</td>
-      <td>${highlight(b['著者名'], query)}</td>
-      <td>${highlight(b['出版社'], query)}</td>
-      <td>${b['年']}</td>
-      <td class="note-cell">${escapeHtml(b['備考'])}</td>
-    </tr>
-  `).join('');
+  bookList.innerHTML = books.map((b, i) => {
+    const note = b['備考'] ? `<div class="book-note">${escapeHtml(b['備考'])}</div>` : '';
+    const delay = Math.min(i * 0.03, 0.8);
+    return `
+    <div class="book-card" style="animation-delay:${delay}s">
+      <div class="shelf-badge">
+        <span class="shelf-label">棚</span>
+        <span class="shelf-value">${b['棚']}-${b['段']}</span>
+      </div>
+      <div class="book-info">
+        <div class="book-title">${highlight(b['書籍名'], query)}</div>
+        <div class="book-meta">
+          <span>✍️ ${highlight(b['著者名'], query) || '<span class="tag">著者不明</span>'}</span>
+          <span>🏢 ${highlight(b['出版社'], query)}</span>
+          <span>📅 ${b['年']}年</span>
+        </div>
+        ${note}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStatus(results, q, from, to) {
+  const status = document.getElementById('status');
+  const parts = [];
+  if (q) parts.push(`「${q}」`);
+  if (from !== null && to !== null) parts.push(`${from}〜${to}年`);
+  else if (from !== null) parts.push(`${from}年以降`);
+  else if (to !== null) parts.push(`${to}年以前`);
+
+  const count = parts.length ? results.length : BOOKS.length;
+  const label = parts.length
+    ? `${parts.join(' + ')} の検索結果`
+    : '全蔵書';
+  status.innerHTML = `${label} <span class="count">${count} 冊</span>`;
 }
 
 function doSearch() {
   const q = document.getElementById('query').value.trim();
   const yearFrom = document.getElementById('yearFrom').value;
   const yearTo = document.getElementById('yearTo').value;
-  const status = document.getElementById('status');
 
   const lower = q.toLowerCase();
   const from = yearFrom ? parseInt(yearFrom) : null;
@@ -266,16 +477,7 @@ function doSearch() {
   });
 
   renderRows(results, q);
-
-  const parts = [];
-  if (q) parts.push(`「${q}」`);
-  if (from !== null && to !== null) parts.push(`${from}〜${to}年`);
-  else if (from !== null) parts.push(`${from}年以降`);
-  else if (to !== null) parts.push(`${to}年以前`);
-
-  status.textContent = parts.length
-    ? `${parts.join('・')}の検索結果：${results.length} 件`
-    : `全 ${BOOKS.length} 件を表示中`;
+  updateStatus(results, q, from, to);
 }
 
 function clearSearch() {
@@ -283,7 +485,7 @@ function clearSearch() {
   document.getElementById('yearFrom').value = '';
   document.getElementById('yearTo').value = '';
   renderRows(BOOKS, '');
-  document.getElementById('status').textContent = `全 ${BOOKS.length} 件を表示中`;
+  updateStatus(BOOKS, '', null, null);
 }
 
 document.getElementById('query').addEventListener('keydown', e => {
@@ -299,13 +501,15 @@ document.getElementById('yearTo').addEventListener('keydown', e => {
 function applyData(data, source) {
   BOOKS = data;
   renderRows(BOOKS, '');
-  document.getElementById('status').textContent = `全 ${BOOKS.length} 件を表示中`;
-  document.getElementById('load-status').textContent = source;
+  updateStatus(BOOKS, '', null, null);
+  const ls = document.getElementById('load-status');
+  ls.innerHTML = source;
 }
 
 function showError(msg) {
-  document.getElementById('load-status').style.color = '#ffcc88';
-  document.getElementById('load-status').textContent = msg;
+  const ls = document.getElementById('load-status');
+  ls.style.color = '#fca5a5';
+  ls.innerHTML = msg;
 }
 
 // books-data.js のデータを即時反映（file:// でも動作するフォールバック）
@@ -318,7 +522,7 @@ fetch(GAS_URL)
   .then(res => { if (!res.ok) throw new Error(); return res.json(); })
   .then(data => {
     if (Array.isArray(data) && data.length > 0) {
-      applyData(data, 'スプレッドシートから読み込みました');
+      applyData(data, '✅ スプレッドシートから読み込みました');
     } else {
       throw new Error('empty');
     }
@@ -326,12 +530,12 @@ fetch(GAS_URL)
   .catch(() =>
     fetch(JSON_URL)
       .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-      .then(data => applyData(data, 'ローカルファイル (books.json) から読み込みました'))
+      .then(data => applyData(data, '✅ ローカルファイルから読み込みました'))
       .catch(() => {
         if (!window.BOOKS_FALLBACK || window.BOOKS_FALLBACK.length === 0) {
-          showError('データの読み込みに失敗しました');
+          showError('❌ データの読み込みに失敗しました');
         } else {
-          applyData(window.BOOKS_FALLBACK, 'ローカルデータ (books-data.js) を使用しています');
+          applyData(window.BOOKS_FALLBACK, '✅ ローカルデータを使用しています');
         }
       })
   );
