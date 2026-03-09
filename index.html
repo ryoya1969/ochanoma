@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お茶のみ部屋 蔵書検索</title>
+  <script src="books-data.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: #f5f0e8;
+      color: #333;
+      min-height: 100vh;
+    }
+    header {
+      background: #5c4a2a;
+      color: #f5f0e8;
+      padding: 20px 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
+    header p {
+      font-size: 0.85rem;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+    .search-area {
+      background: #fff;
+      padding: 20px 24px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .search-area input[type="text"] {
+      flex: 1 1 280px;
+      padding: 10px 14px;
+      font-size: 1rem;
+      border: 2px solid #b8a070;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-area input[type="text"]:focus {
+      border-color: #5c4a2a;
+    }
+    .year-filter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .year-filter label {
+      font-size: 0.9rem;
+      color: #5c4a2a;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .year-filter input[type="number"] {
+      width: 80px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      border: 2px solid #b8a070;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .year-filter input[type="number"]:focus {
+      border-color: #5c4a2a;
+    }
+    .year-filter span {
+      color: #888;
+      font-size: 0.9rem;
+    }
+    .search-area button {
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      background: #5c4a2a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-area button:hover { background: #3e3018; }
+    .search-area button.clear {
+      background: #888;
+    }
+    .search-area button.clear:hover { background: #555; }
+    #status {
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      color: #666;
+      background: #faf8f3;
+      border-bottom: 1px solid #e0d8c8;
+    }
+    .results {
+      padding: 16px 24px 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    thead tr {
+      background: #5c4a2a;
+      color: #f5f0e8;
+    }
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid #e8e0d0;
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #faf5e8; }
+    tbody td {
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      vertical-align: top;
+    }
+    .shelf-badge {
+      display: inline-block;
+      background: #5c4a2a;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.85rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      min-width: 56px;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .title-cell { font-weight: 500; }
+    .note-cell { color: #888; font-size: 0.85rem; }
+    .highlight { background: #ffe98a; border-radius: 2px; }
+    .no-result {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+      font-size: 1rem;
+    }
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.2rem; }
+      .search-area { padding: 14px 12px; }
+      .results { padding: 12px 8px 40px; }
+      thead th, tbody td { padding: 8px 8px; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>お茶のみ部屋 蔵書検索</h1>
+  <p>書籍名・著者名・出版社などで棚と段を調べられます</p>
+  <p id="load-status" style="font-size:0.8rem; margin-top:6px; opacity:0.75;">スプレッドシートからデータを読み込んでいます...</p>
+</header>
+
+<div class="search-area">
+  <input type="text" id="query" placeholder="書籍名・著者名・出版社などを入力..." autofocus>
+  <div class="year-filter">
+    <label>出版年</label>
+    <input type="number" id="yearFrom" placeholder="1900" min="1900" max="2100">
+    <span>〜</span>
+    <input type="number" id="yearTo" placeholder="2100" min="1900" max="2100">
+    <span>年</span>
+  </div>
+  <button onclick="doSearch()">検索</button>
+  <button class="clear" onclick="clearSearch()">クリア</button>
+</div>
+
+<div id="status">読み込み中...</div>
+
+<div class="results">
+  <table id="table">
+    <thead>
+      <tr>
+        <th>棚・段</th>
+        <th>書籍名</th>
+        <th>著者名</th>
+        <th>出版社</th>
+        <th>年</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="no-result" id="noResult" style="display:none">該当する書籍が見つかりませんでした。</div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzzdnckjfPWdpQ7ElY85I5H_TUsoNSZih0lo7diumxISzXfwtcUybJBZKfnr0T6SULB/exec";
+const JSON_URL = "books.json";
+
+let BOOKS = [];
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlight(text, query) {
+  if (!query || !text) return escapeHtml(text);
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escapeHtml(text).replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="highlight">$1</mark>');
+}
+
+function renderRows(books, query) {
+  const tbody = document.getElementById('tbody');
+  const noResult = document.getElementById('noResult');
+  const table = document.getElementById('table');
+  if (books.length === 0) {
+    tbody.innerHTML = '';
+    table.style.display = 'none';
+    noResult.style.display = '';
+    return;
+  }
+  table.style.display = '';
+  noResult.style.display = 'none';
+  tbody.innerHTML = books.map(b => `
+    <tr>
+      <td><span class="shelf-badge">棚${b['棚']} ${b['段']}段</span></td>
+      <td class="title-cell">${highlight(b['書籍名'], query)}</td>
+      <td>${highlight(b['著者名'], query)}</td>
+      <td>${highlight(b['出版社'], query)}</td>
+      <td>${b['年']}</td>
+      <td class="note-cell">${escapeHtml(b['備考'])}</td>
+    </tr>
+  `).join('');
+}
+
+function doSearch() {
+  const q = document.getElementById('query').value.trim();
+  const yearFrom = document.getElementById('yearFrom').value;
+  const yearTo = document.getElementById('yearTo').value;
+  const status = document.getElementById('status');
+
+  const lower = q.toLowerCase();
+  const from = yearFrom ? parseInt(yearFrom) : null;
+  const to = yearTo ? parseInt(yearTo) : null;
+
+  const results = BOOKS.filter(b => {
+    if (q) {
+      const hit = [b['書籍名'], b['著者名'], b['出版社'], b['備考'], b['棚'], b['段'], b['年']].some(v => v && v.toLowerCase().includes(lower));
+      if (!hit) return false;
+    }
+    if (from !== null || to !== null) {
+      const y = parseInt(b['年']);
+      if (isNaN(y)) return false;
+      if (from !== null && y < from) return false;
+      if (to !== null && y > to) return false;
+    }
+    return true;
+  });
+
+  renderRows(results, q);
+
+  const parts = [];
+  if (q) parts.push(`「${q}」`);
+  if (from !== null && to !== null) parts.push(`${from}〜${to}年`);
+  else if (from !== null) parts.push(`${from}年以降`);
+  else if (to !== null) parts.push(`${to}年以前`);
+
+  status.textContent = parts.length
+    ? `${parts.join('・')}の検索結果：${results.length} 件`
+    : `全 ${BOOKS.length} 件を表示中`;
+}
+
+function clearSearch() {
+  document.getElementById('query').value = '';
+  document.getElementById('yearFrom').value = '';
+  document.getElementById('yearTo').value = '';
+  renderRows(BOOKS, '');
+  document.getElementById('status').textContent = `全 ${BOOKS.length} 件を表示中`;
+}
+
+document.getElementById('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+document.getElementById('yearFrom').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+document.getElementById('yearTo').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+function applyData(data, source) {
+  BOOKS = data;
+  renderRows(BOOKS, '');
+  document.getElementById('status').textContent = `全 ${BOOKS.length} 件を表示中`;
+  document.getElementById('load-status').textContent = source;
+}
+
+function showError(msg) {
+  document.getElementById('load-status').style.color = '#ffcc88';
+  document.getElementById('load-status').textContent = msg;
+}
+
+// books-data.js のデータを即時反映（file:// でも動作するフォールバック）
+if (window.BOOKS_FALLBACK && window.BOOKS_FALLBACK.length > 0) {
+  applyData(window.BOOKS_FALLBACK, 'ローカルデータを表示中（スプレッドシートに接続中...）');
+}
+
+// 1. GAS → 2. books.json の順で上書き試行
+fetch(GAS_URL)
+  .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+  .then(data => {
+    if (Array.isArray(data) && data.length > 0) {
+      applyData(data, 'スプレッドシートから読み込みました');
+    } else {
+      throw new Error('empty');
+    }
+  })
+  .catch(() =>
+    fetch(JSON_URL)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => applyData(data, 'ローカルファイル (books.json) から読み込みました'))
+      .catch(() => {
+        if (!window.BOOKS_FALLBACK || window.BOOKS_FALLBACK.length === 0) {
+          showError('データの読み込みに失敗しました');
+        } else {
+          applyData(window.BOOKS_FALLBACK, 'ローカルデータ (books-data.js) を使用しています');
+        }
+      })
+  );
+</script>
+</body>
+</html>

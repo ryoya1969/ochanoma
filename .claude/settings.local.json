@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"\nimport openpyxl\nwb = openpyxl.load_workbook\\('お茶のみ部屋図録 .xlsx'\\)\nprint\\('Sheets:', wb.sheetnames\\)\nws = wb['Sheet2'] if 'Sheet2' in wb.sheetnames else wb.worksheets[1]\nprint\\('Sheet2 dimensions:', ws.dimensions\\)\nprint\\('Max row:', ws.max_row, 'Max col:', ws.max_column\\)\nprint\\('First 5 rows:'\\)\nfor row in ws.iter_rows\\(min_row=1, max_row=5, values_only=True\\):\n    print\\(row\\)\n\")",
+      "Bash(pip3 install openpyxl -q && python3 -c \"\nimport openpyxl\nwb = openpyxl.load_workbook\\('お茶のみ部屋図録 .xlsx'\\)\nprint\\('Sheets:', wb.sheetnames\\)\nws = wb.worksheets[1]\nprint\\('Sheet name:', ws.title\\)\nprint\\('Max row:', ws.max_row, 'Max col:', ws.max_column\\)\nprint\\('First 10 rows:'\\)\nfor row in ws.iter_rows\\(min_row=1, max_row=10, values_only=True\\):\n    print\\(row\\)\n\")"
+    ]
+  }
+}
